@@ -1,23 +1,52 @@
+import { useAuth } from '@/contexts/AuthContext'
 import { Box, Flex, VStack, IconButton, Text, } from '@chakra-ui/react'
 import { Link, useMatchRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { LuUsers, LuShield, LuBoxes, LuChevronsLeft, LuChevronsRight } from 'react-icons/lu'
+import { LuUsers, LuShield, LuBoxes, LuChevronsLeft, LuBuilding2, LuChevronsRight } from 'react-icons/lu'
+import { useColorModeValue } from './ui/color-mode'
 
 function Sidebar() {
+  const { currentUser } = useAuth()
   const [isCollapsed, setIsCollapsed] = useState(false)
 
   // Use useMatchRoute to detect active routes
   const matchRoute = useMatchRoute()
 
-  // Navigation items with icons
+  // Helper function to check if the user has a specific permission
+  const hasPermission = (permission: string): boolean => {
+    return !!currentUser && currentUser.permissions.includes(permission)
+  }
+
   const navItems = [
-    { to: '/dashboard/users', label: 'Users', icon: LuUsers },
-    { to: '/dashboard/roles', label: 'Roles', icon: LuShield },
-    { to: '/dashboard/items', label: 'Items', icon: LuBoxes},
+    { to: '/dashboard/organizations', label: 'Organizations', icon: LuBuilding2, requiredPermission: 'read:all_organizations', platformOnly: true },
+    { to: '/dashboard/users', label: 'Users', icon: LuUsers, requiredPermission: 'read:users' },
+    { to: '/dashboard/roles', label: 'Roles', icon: LuShield, requiredPermission: 'read:roles' },
+    { to: '/dashboard/items', label: 'Items', icon: LuBoxes, requiredPermission: 'read:items' },
   ]
+
+  // Filter navItems based on user permissions
+  const filteredNavItems = navItems.filter(item => {
+    if (item.requiredPermission) {
+      if (!hasPermission(item.requiredPermission)) {
+        return false
+      }
+    }
+
+    // If item is specifically marked as platformOnly, only show if current_user is platform admin
+    if (item.platformOnly && !currentUser?.is_platform_admin) {
+        return false // Hide if it's platform only and user isn't platform admin
+    }
+
+    return true // Otherwise, show the item
+  })
+
 
   // Toggle collapse state for desktop
   const toggleCollapse = () => setIsCollapsed(!isCollapsed)
+
+  const bgMain = useColorModeValue('', 'gray.950') // Assuming these are from your Dashboard component context
+  const bgSide = useColorModeValue('gray.50', '') // Moved here for completeness
+
 
   return (
     <>
@@ -27,12 +56,13 @@ function Sidebar() {
         position="relative"
         top={0}
         left={0}
-        h="100vh"
+        h="100vh" // Ensure this sidebar container itself has a height
         w={isCollapsed ? '80px' : '250px'}
         borderRight="1px"
         transition="width 0.2s ease"
         zIndex="docked"
-        overflow="hidden"
+        overflow="hidden" // Hides content that exceeds width during collapse transition
+        bg={bgSide} // Apply sidebar background color
       >
         <Flex
           direction="column"
@@ -53,7 +83,7 @@ function Sidebar() {
 
           {/* Navigation Items */}
           <VStack align="start" gap={2} flex={1}>
-            {navItems.map((item) => {
+            {filteredNavItems.map((item) => { // <--- Use filteredNavItems here
               const isActive = !!matchRoute({ to: item.to })
               return (
                 <Link
@@ -67,6 +97,9 @@ function Sidebar() {
                     borderRadius="md"
                     w="100%"
                     fontWeight={isActive ? 'semibold' : 'normal'}
+                    // Optional: Highlight active link
+                    bg={isActive ? useColorModeValue('gray.200', 'gray.700') : 'transparent'}
+                    _hover={{ bg: useColorModeValue('gray.100', 'gray.800') }}
                   >
                     <item.icon size={20} style={{ marginRight: isCollapsed ? 0 : 12 }} />
                     {!isCollapsed && <Text fontSize="md">{item.label}</Text>}
@@ -75,10 +108,11 @@ function Sidebar() {
               )
             })}
           </VStack>
+          {/* Add a spacer or footer here if needed */}
         </Flex>
       </Box>
 
-      {/* Spacer to prevent content overlap on desktop */}
+      {/* Spacer to prevent content overlap on desktop - This should remain */}
       <Box
         display={{ base: 'none', md: 'block' }}
         w={isCollapsed ? '80px' : '250px'}

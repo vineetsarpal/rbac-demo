@@ -36,21 +36,21 @@ def seed_data():
 
         org0 = db.query(models.Organization).filter(models.Organization.id == org1_id).first()
         if not org0:
-            org0 = models.Organization(id=org0_id, name="superadmin")
+            org0 = models.Organization(id=org0_id, name="superadmin", slug="default")
             db.add(org0)
             db.commit()
             db.refresh(org0)
 
         org1 = db.query(models.Organization).filter(models.Organization.id == org1_id).first()
         if not org1:
-            org1 = models.Organization(id=org1_id, name="Acme Inc")
+            org1 = models.Organization(id=org1_id, name="Acme Inc", slug="acme")
             db.add(org1)
             db.commit()
             db.refresh(org1)
         
         org2 = db.query(models.Organization).filter(models.Organization.id == org2_id).first()
         if not org2:
-            org2 = models.Organization(id=org2_id, name="FooBar Corp")
+            org2 = models.Organization(id=org2_id, name="FooBar Corp", slug="foobar")
             db.add(org2)
             db.commit()
             db.refresh(org2)
@@ -58,26 +58,30 @@ def seed_data():
         # --- Create Users ---
         # Org0
         superadmin_password_hash = utils.hash_password("superadmin")
-        superadmin_user = db.query(models.User).filter(models.User.email == "superadmin@superadmin.com").first()
+        superadmin_user = db.query(models.User).filter(models.User.username == "superadmin").first()
         if not superadmin_user:
             superadmin_user = models.User(
+                username="superadmin",
                 password=superadmin_password_hash,
                 email="superadmin@superadmin.com",
                 name="Super Administrator",
+                is_platform_admin=True,
                 organization_id=org0_id
             )
             db.add(superadmin_user)
             db.commit()
             db.refresh(superadmin_user)
         else:
-            print("Admin user already exists")
+            print("super admin user already exists")
 
         # Org1
         admin_password_hash = utils.hash_password("admin")
 
-        admin_user1 = db.query(models.User).filter(models.User.email == "admin@acme.com").first()
+        admin_user1 = db.query(models.User).join(models.Organization).filter(models.User.username == "admin",
+                                                                             models.Organization.id == org1_id).first()
         if not admin_user1:
             admin_user1 = models.User(
+                username="admin",
                 password=admin_password_hash,
                 email="admin@acme.com",
                 name="Administrator",
@@ -90,12 +94,14 @@ def seed_data():
             print("Admin user already exists")
 
         editor_password_hash = utils.hash_password("editor")
-        editor_user1 = db.query(models.User).filter(models.User.email == "editor@acme.com").first()
+        editor_user1 = db.query(models.User).join(models.Organization).filter(models.User.username == "editor",
+                                                                              models.Organization.id == org1_id).first()
         if not editor_user1:
             editor_user1 = models.User(
+                username="editor",
                 email="editor@acme.com",
                 password=editor_password_hash,
-                name="Employee Editor",
+                name="John Doe",
                 organization_id=org1_id
             )
             db.add(editor_user1)
@@ -105,12 +111,14 @@ def seed_data():
             print("Editor user already exists")
         
         viewer_password_hash = utils.hash_password("viewer")
-        viewer_user1 = db.query(models.User).filter(models.User.email == "viewer@acme.com").first()
+        viewer_user1 = db.query(models.User).join(models.Organization).filter(models.User.username == "viewer",
+                                                                              models.Organization.id == org1_id).first()
         if not viewer_user1:
             viewer_user1 = models.User(
+                username="viewer",
                 email="viewer@acme.com",
                 password=viewer_password_hash,
-                name="Employee Viewer",
+                name="Jane Doe",
                 organization_id=org1_id
             )
             db.add(viewer_user1)
@@ -122,9 +130,11 @@ def seed_data():
         # Org 2
         admin_password_hash = utils.hash_password("admin")
 
-        admin_user2 = db.query(models.User).filter(models.User.email == "admin@foobar.com").first()
+        admin_user2 = db.query(models.User).join(models.Organization).filter(models.User.username == "admin",
+                                                                            models.Organization.id == org2_id).first()
         if not admin_user2:
             admin_user2 = models.User(
+                username="admin",
                 password=admin_password_hash,
                 email="admin@foobar.com",
                 name="Administrator",
@@ -137,12 +147,14 @@ def seed_data():
             print("Admin user already exists")
 
         editor_password_hash = utils.hash_password("editor")
-        editor_user2 = db.query(models.User).filter(models.User.email == "editor@foobar.com").first()
+        editor_user2 = db.query(models.User).join(models.Organization).filter(models.User.username == "editor",
+                                                                              models.Organization.id == org2_id).first()
         if not editor_user2:
             editor_user2 = models.User(
+                username="editor",
                 email="editor@foobar.com",
                 password=editor_password_hash,
-                name="Employee Editor",
+                name="Bob",
                 organization_id=org2_id
             )
             db.add(editor_user2)
@@ -152,12 +164,14 @@ def seed_data():
             print("Editor user already exists")
         
         viewer_password_hash = utils.hash_password("viewer")
-        viewer_user2 = db.query(models.User).filter(models.User.email == "viewer@foobar.com").first()
+        viewer_user2 = db.query(models.User).join(models.Organization).filter(models.User.username == "viewer",
+                                                                              models.Organization.id == org2_id).first()
         if not viewer_user2:
             viewer_user2 = models.User(
+                username="viewer",
                 email="viewer@foobar.com",
                 password=viewer_password_hash,
-                name="Employee Viewer",
+                name="Pam",
                 organization_id=org2_id
             )
             db.add(viewer_user2)
@@ -169,7 +183,7 @@ def seed_data():
         # --- Create Roles ---
         superadmin_role = db.query(models.Role).filter(models.Role.name == "superadmin").first()
         if not superadmin_role:
-            superadmin_role = models.Role(name="superadmin", description="Super Administrator")
+            superadmin_role = models.Role(name="superadmin", description="Super Administrator", is_platform_level=True)
             db.add(superadmin_role)
             db.commit()
             db.refresh(superadmin_role)
@@ -223,10 +237,17 @@ def seed_data():
             if not permission:
                 permission = models.Permission(name=perm_name, description=f"Ability to {perm_name.replace(':', ' ')}")
                 db.add(permission)
-                db.commit()
-                db.refresh(permission)
+                db.flush
             else:
                 print(f"Permission '{permission.name}' already exists.")
+
+            if "organization" in permission.name.lower():
+                permission.is_platform_level = True
+                print(f"  Setting '{permission.name}' as platform-level.")
+            else:
+                permission.is_platform_level = False
+            db.commit()
+            db.refresh(permission)
             created_permissions[perm_name] = permission
 
         # --- Assign Permissions to Roles ---

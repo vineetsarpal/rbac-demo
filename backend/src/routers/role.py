@@ -32,7 +32,11 @@ async def get_roles(skip: int = 0, limit: int = 10, db: Session = Depends(get_db
     if "read:roles" not in user_permissions:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions to perform this action!")
     
-    roles = db.query(models.Role).offset(skip).limit(limit).all()
+    roles_query = db.query(models.Role)
+    if not current_user.is_platform_admin:
+        roles_query = roles_query.filter(models.Role.is_platform_level == False)
+
+    roles = roles_query.offset(skip).limit(limit).all()
     return roles
 
 # Get Role with id
@@ -43,7 +47,11 @@ async def get_role(role_id: int, db: Session = Depends(get_db), current_user: sc
     if "read:roles" not in user_permissions:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions to perform this action!")
     
-    role  = db.query(models.Role).filter(models.Role.id == role_id).first()
+    role_query = db.query(models.Role)
+    if not current_user.is_platform_admin:
+        role_query = role_query.filter(models.Role.is_platform_level == False)
+        
+    role  = role_query.filter(models.Role.id == role_id).first()
     if not role:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Role with id:  {role_id} not found")
     return role
@@ -90,12 +98,19 @@ def get_role_permissions(role_id: int, db: Session = Depends(get_db), current_us
     if "read:roles" not in user_permissions:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions to perform this action!")
     
-    role = db.query(models.Role).filter(models.Role.id == role_id).first()
+    role_query = db.query(models.Role)
+    if not current_user.is_platform_admin:
+        role_query = role_query.filter(models.Role.is_platform_level == False)
+    role = role_query.filter(models.Role.id == role_id).first()
     if not role:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Role with id: {role_id} not found")
 
     # Fetch all permissions and check if assigned to role
-    all_permissions = db.query(models.Permission).all()
+    permissions_query = db.query(models.Permission)
+    if not current_user.is_platform_admin:
+        permissions_query = permissions_query.filter(models.Permission.is_platform_level == False)
+
+    all_permissions = permissions_query.all()
     assigned_permission_ids = {permission.id for permission in role.permissions}
 
     permissions_with_assignment: List[schemas.PermissionWithAssignment] = []

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, Boolean, DateTime, Table, Date
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, Boolean, DateTime, Table, Date, UniqueConstraint
 from sqlalchemy.sql.expression import text
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.orm import relationship
@@ -29,6 +29,7 @@ class Organization(Base):
 
     id = Column(String, primary_key=True, index=True)
     name = Column(String, unique=True, index=True, nullable=False)
+    slug = Column(String, unique=True, index=True, nullable=False)
     users = relationship("User", back_populates="organization")
     items = relationship("Item", back_populates="organization")
 
@@ -37,15 +38,21 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, unique=True, index=True)
+    username = Column(String, index=True, nullable=False)
+    email = Column(String, index=True)
     password = Column(String)
     name = Column(String)
     is_active = Column(Boolean, default=True)
+    is_platform_admin = Column(Boolean, default=False, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     updated_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'), onupdate=text('now()'))
     organization_id = Column(String, ForeignKey("organizations.id"), nullable=True)
     organization = relationship("Organization", back_populates="users")
     roles = relationship("Role", secondary=user_roles, back_populates="users")
+
+    __table_args__ = (
+        UniqueConstraint('organization_id', 'username', name='_organization_username_uc'),
+    )
 
 class Role(Base):
     __tablename__ = "roles"
@@ -53,6 +60,7 @@ class Role(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(50), unique=True)
     description = Column(String(100))
+    is_platform_level = Column(Boolean, default=False, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     updated_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'), onupdate=text('now()'))
     users = relationship("User", secondary=user_roles, back_populates="roles")
@@ -63,6 +71,7 @@ class Permission(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(50), unique=True)  # e.g., "create:contact", "delete:user"
+    is_platform_level = Column(Boolean, default=False, nullable=False)
     description = Column(String(100))
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     updated_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'), onupdate=text('now()'))

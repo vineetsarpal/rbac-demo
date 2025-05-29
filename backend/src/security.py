@@ -16,7 +16,7 @@ ALGORITHM = settings.ALGORITHM
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='auth/login')
 
 def authenticate_user(username: str, password: str, db: Session = Depends(get_db)):
-    user = db.query(models.User).filter(models.User.email == username).first()
+    user = db.query(models.User).filter(models.User.username == username).first()
     if not user:
         return False
     if not utils.verify_password(password, user.password):
@@ -59,7 +59,7 @@ async def get_current_user(token: Annotated[Optional[str], Depends(oauth2_scheme
         print(f"Basic Auth validation error: {e}") 
         raise credentials_exception from e
     
-    user = db.query(models.User).filter(models.User.email == token_data.username).first()
+    user = db.query(models.User).filter(models.User.username == token_data.username).first()
     if user is None:
         raise credentials_exception
     

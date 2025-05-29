@@ -1,16 +1,12 @@
-import { useAuth } from "@/contexts/AuthContext"
 import {
   Box,
-  Button,
   Container,
   Heading,
   Stack,
   VStack,
 } from "@chakra-ui/react"
-import { useQuery } from "@tanstack/react-query"
-import { userService } from "@/services/userService"
 
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import AuthButton from "@/components/AuthButton"
 
 export const Route = createFileRoute('/')({
@@ -18,21 +14,6 @@ export const Route = createFileRoute('/')({
 })
 
 function Index() {
-    const { isLoggedIn, token } = useAuth()
-
-    const { data: userData } = useQuery({
-        queryKey: ["currentUser", token],
-        queryFn: () => userService.getCurrentUser(token),
-        staleTime: 5 * 60 * 1000,
-        enabled: isLoggedIn && !!token,
-    })
-
-    const { data: orgData } = useQuery({
-        queryKey: ["currentUserOrg", userData?.id, token],
-        queryFn: () => userService.getCurrentUserOrg(userData!.id.toString(),token),
-        staleTime: 5 * 60 * 1000,
-        enabled: isLoggedIn && !!token && !!userData
-    })
   
   return (
     <Box>
@@ -43,11 +24,6 @@ function Index() {
           </Heading>
           <Stack direction={{ base: "column", sm: "row" }} gap={4} mt={4} justify="center">
               <AuthButton />
-              {isLoggedIn ? 
-                <Link to="/">
-                    <Button size="lg">Welcome, {userData?.name} from {orgData?.name}</Button>
-                </Link> : null
-                }
           </Stack>
         </VStack>
       </Container>

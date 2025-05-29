@@ -1,6 +1,6 @@
 from fastapi import status, HTTPException, Depends, APIRouter, Response
 from src import models, schemas, utils, security
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session
 from src.database import get_db
 from typing import List
 
@@ -53,12 +53,8 @@ def get_user(user_id: int, db: Session = Depends(get_db), current_user: schemas.
 
 # Get User's Organization   
 @router.get("/{user_id}/organization", response_model=schemas.OrganizationPublic)
-async def get_user_organization(user_id: int, db: Session = Depends(get_db), current_user: schemas.CurrentUser = Depends(security.get_current_active_user)):
-    # Check permissions
-    if "read:users" not in current_user.permissions:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions to read user organization details.")
-    user_org_query = db.query(models.User).options(joinedload(models.User.organization))
+async def get_user_organization(user_id: int, db: Session = Depends(get_db)):
+    user_org_query = db.query(models.User).join(models.User.organization)
     user = user_org_query.filter(models.User.id == user_id).first()
     if not user:
         raise HTTPException(
@@ -103,7 +99,7 @@ def delete_role(user_id: int, db: Session = Depends(get_db), current_user: schem
     user = user_query.first()
     if user == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id: {user_id} does not exist")
-    if user.email.lower().startswith("admin"):
+    if user.username.lower().startswith("admin"):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Can not delete an admin user!")
     user_query.delete(synchronize_session=False)
     db.commit()
@@ -117,8 +113,12 @@ def get_user_roles(user_id: int, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id: {user_id} not found")
     
+    roles_query = db.query(models.Role)
+    if not user.is_platform_admin:
+        roles_query = roles_query.filter(models.Role.is_platform_level == False)
+
     # Fetch all roles and check if assigned to current user
-    all_roles = db.query(models.Role).all()
+    all_roles = roles_query.all()
     assigned_role_ids = { role.id for role in user.roles }
 
     roles_with_assignment: List[schemas.RoleWithAssignment] = []

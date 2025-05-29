@@ -278,6 +278,44 @@ export interface components {
             /** Client Secret */
             client_secret?: string | null;
         };
+        /** CurrentUser */
+        CurrentUser: {
+            /** Username */
+            username: string;
+            /** Email */
+            email?: string | null;
+            /** Name */
+            name?: string | null;
+            /** Id */
+            id: number;
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Organization Id */
+            organization_id?: string | null;
+            /**
+             * Permissions
+             * @default []
+             */
+            permissions: string[];
+            /**
+             * Is Platform Admin
+             * @default false
+             */
+            is_platform_admin: boolean | null;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -406,6 +444,8 @@ export interface components {
         };
         /** UserCreate */
         UserCreate: {
+            /** Username */
+            username: string;
             /** Email */
             email?: string | null;
             /** Name */
@@ -413,6 +453,8 @@ export interface components {
         };
         /** UserPublic */
         UserPublic: {
+            /** Username */
+            username: string;
             /** Email */
             email?: string | null;
             /** Name */
@@ -503,7 +545,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserPublic"];
+                    "application/json": components["schemas"]["CurrentUser"];
                 };
             };
         };

@@ -7,21 +7,21 @@ import { useAuth } from "@/contexts/AuthContext"
 import { userService } from "@/services/userService"
 
 function Navbar() {
-    const { isLoggedIn, token } = useAuth()
+    const { isLoggedIn, token, currentUser } = useAuth()
     const bgNav = useColorModeValue('gray.50','')
 
-    const { data } = useQuery({
-        queryKey: ["currentUser", token],
-        queryFn: () => userService.getCurrentUser(token),
+    const { data: orgData } = useQuery({
+        queryKey: ["currentUserOrg", currentUser?.id, token],
+        queryFn: () => userService.getCurrentUserOrg(currentUser!.id.toString(),token),
         staleTime: 5 * 60 * 1000,
-        enabled: isLoggedIn && !!token,
+        enabled: isLoggedIn && !!token && !!currentUser
     })
 
   return (
     <Flex as={"nav"} px={10} py={2} gap={2} alignItems={"center"} wrap={"wrap"} bg={isLoggedIn ? bgNav : ''}>
         <HStack gap={10}>
             <Link to="/"  activeProps={{ className: 'font-bold' }} activeOptions={{ exact: true }}>
-                <Heading size="3xl" fontWeight="bold">{}</Heading>
+                <Heading size="3xl" fontWeight="bold">{orgData?.name}</Heading>
             </Link> 
         </HStack>
     
@@ -33,11 +33,8 @@ function Navbar() {
                     <Button variant={"solid"} rounded="full">Dashboard</Button>
                 </Link>
             }   
-            {isLoggedIn && <Text>Welcome, {data?.name} </Text>}
-            {/* {isAuthenticated && <Text>Welcome, {auth0User?.name} </Text>} */}
-
+            {isLoggedIn && <Text>Hi, {currentUser?.name} </Text>}
             <AuthButton />
-            {/* {!isLoggedIn && <Auth0Button />} */}
             <ColorModeButton />
         </HStack>
     </Flex>

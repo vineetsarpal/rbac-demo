@@ -26,6 +26,7 @@ class OrganizationPublic(OrganizationBase):
 
 # === User Schemas ===
 class UserBase(BaseModel):
+    username: str
     email: EmailStr | None = None
     name: str | None = None
 
@@ -43,6 +44,7 @@ class UserPublic(UserBase):
 
 class CurrentUser(UserPublic):
     permissions: List[str] = []
+    is_platform_admin: bool | None = False
 
 
 # === Permission Schemas ===

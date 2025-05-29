@@ -1,19 +1,21 @@
 import { API_BASE_URL } from '@/config'
+import { useAuth } from '@/contexts/AuthContext'
+import type { paths } from '@/types/openapi'
+// import { useAuth0 } from '@auth0/auth0-react'
 import { Button, Card, CloseButton, Dialog, Portal, SimpleGrid } from '@chakra-ui/react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { paths } from '@/types/openapi'
-import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState } from 'react'
-import { useAuth } from '@/contexts/AuthContext'
 
-export const Route = createFileRoute('/dashboard/users/')({
+import { createFileRoute, Link } from '@tanstack/react-router'
+
+export const Route = createFileRoute('/dashboard/roles/')({
   component: RouteComponent,
 })
 
-type User = paths["/users/{user_id}"]["get"]["responses"]["200"]["content"]["application/json"]
+type Role = paths["/roles/{role_id}"]["get"]["responses"]["200"]["content"]["application/json"]
 
-const getUsers = async (token: string | null) => {
-    const res = await fetch(`${API_BASE_URL}/users`, {
+const getRoles = async (token: string | null) => {
+    const res = await fetch(`${API_BASE_URL}/roles`, {
         headers: {
             "Authorization": `Bearer ${token}`
         }
@@ -22,9 +24,9 @@ const getUsers = async (token: string | null) => {
     return res.json()
 }
 
-const deleteUser = async (payload: {id: string, token: string | null})  => {
+const deleteRole = async (payload: {id: string, token: string | null})  => {
     const { id, token } = payload
-    const res = await fetch(`${API_BASE_URL}/users/${id}`, {
+    const res = await fetch(`${API_BASE_URL}/roles/${id}`, {
         method: "DELETE",
         headers: {
         "Authorization": `Bearer ${token}`,
@@ -39,16 +41,17 @@ function RouteComponent() {
     const queryClient = useQueryClient()
     const [idToDelete, setIdToDelete] = useState<string | null>(null)
 
-    const { data, isLoading, error } = useQuery<User[]>({
-        queryKey: ["users"],
-        queryFn: () => getUsers(token),
+
+    const { data, isLoading, error } = useQuery<Role[]>({
+        queryKey: ["roles"],
+        queryFn: () => getRoles(token),
         enabled: !!token
     })
 
     const { mutate, isPending } = useMutation({
-        mutationFn: deleteUser,
+        mutationFn: deleteRole,
         onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["users"] })
+        queryClient.invalidateQueries({ queryKey: ["roles"] })
       }
     })
 
@@ -67,19 +70,19 @@ function RouteComponent() {
     return (
         <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} gap={10}>
         {
-            data?.map((user: User) => (
-                <Card.Root key={user.id}> 
-                    <Link to="/dashboard/users/$userId" params={{ userId: user.id.toString() }} >
-                    <Card.Header>{user.name}</Card.Header>
+            data?.map((role: Role) => (
+                <Card.Root key={role.id}> 
+                    <Link to="/dashboard/roles/$roleId" params={{ roleId: role.id.toString() }} >
+                    <Card.Header>{role.name}</Card.Header>
                     <Card.Body>
-                        Email: {user.email}
+                        {role.description}
                     </Card.Body>
                     </Link>
 
                     <Card.Footer>
                     <Dialog.Root role="alertdialog">
                         <Dialog.Trigger asChild>
-                        <Button variant="outline" size="sm" onClick={() => handleDeleteClick(user.id.toString())}>
+                        <Button variant="outline" size="sm" onClick={() => handleDeleteClick(role.id.toString())}>
                             Delete
                         </Button>
                         </Dialog.Trigger>
@@ -92,7 +95,7 @@ function RouteComponent() {
                             </Dialog.Header>
                             <Dialog.Body>
                                 <p>
-                                This will permanently delete User ID: {user.id}
+                                This will permanently delete Role ID: {role.id}
                                 </p>
                             </Dialog.Body>
                             <Dialog.Footer>
