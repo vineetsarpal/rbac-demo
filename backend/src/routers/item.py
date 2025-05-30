@@ -34,7 +34,10 @@ async def get_items(skip: int = 0, limit: int = 10, db: Session = Depends(get_db
     user_permissions = current_user.permissions
     if "read:items" not in user_permissions:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions to perform this action!")
-    items = db.query(models.Item).filter(models.Item.organization_id == current_user.organization_id).offset(skip).limit(limit).all()
+    items_query = db.query(models.Item)
+    if not current_user.is_platform_admin:
+        items_query = items_query.filter(models.Item.organization_id == current_user.organization_id)
+    items = items_query.offset(skip).limit(limit).all()
     return items
 
 
@@ -45,8 +48,10 @@ async def get_item(item_id: int, db: Session = Depends(get_db), current_user: sc
     user_permissions = current_user.permissions
     if "read:items" not in user_permissions:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions to perform this action!")
-    
-    item  = db.query(models.Item).filter(models.Item.organization_id == current_user.organization_id).filter(models.Item.id == item_id).first()
+    item_query = db.query(models.Item)
+    if not current_user.is_platform_admin:
+        item_query = item_query.filter(models.Item.organization_id == current_user.organization_id)
+    item  = item_query.filter(models.Item.id == item_id).first()
     if not item:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Item with id:  {item_id} not found")
     return item
@@ -63,8 +68,6 @@ def update_item(item_id: int, updated_item: schemas.ItemCreate, db: Session = De
     item = item_query.first()
     if item == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Item with id: {item_id} does not exist")
-    if item.itemholder_id != current_user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to perform requested action")
     item_query.update(updated_item.model_dump(), synchronize_session=False)
     db.commit()
     return item_query.first()
@@ -81,8 +84,6 @@ def delete_item(item_id: int, db: Session = Depends(get_db), current_user: schem
     item = item_query.first()
     if item == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Item with id: {item_id} does not exist")
-    if item.itemholder_id != current_user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to perform requested action")
     item_query.delete(synchronize_session=False)
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)

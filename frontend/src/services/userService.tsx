@@ -22,12 +22,13 @@ export const userService = {
     getCurrentUserOrg: async (userId: string, token: string | null): Promise<Organization> => {
          const res = await fetch(`${API_BASE_URL}/users/${userId}/organization`, {
             headers: {
-                Authorization: `Bearer ${token}`
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
             },
         })
         if (!res.ok) {
-            throw new Error (res.status === 401 ? "Token expired" : "Failed to fetch user")
-            }
+            throw new Error('Failed to fetch user organization');
+        }
         return res.json()
     }
 }

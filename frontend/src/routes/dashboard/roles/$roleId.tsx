@@ -76,7 +76,10 @@ function RouteComponent() {
                 `${API_BASE_URL}/roles/${roleData?.id}/permissions`,
                 {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {  
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json" 
+                    },
                     body: JSON.stringify(selectedPermissionIds)
                 }
             );

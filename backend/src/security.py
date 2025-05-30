@@ -59,7 +59,10 @@ async def get_current_user(token: Annotated[Optional[str], Depends(oauth2_scheme
         print(f"Basic Auth validation error: {e}") 
         raise credentials_exception from e
     
-    user = db.query(models.User).filter(models.User.username == token_data.username).first()
+    user = db.query(models.User).join(models.Organization,
+                                      models.User.organization_id == models.Organization.id).filter(
+                                          models.User.organization_id == organization_id,
+                                          models.User.username == token_data.username).first()
     if user is None:
         raise credentials_exception
     

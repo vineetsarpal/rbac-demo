@@ -3,7 +3,6 @@ import { Box, Flex, VStack, IconButton, Text, } from '@chakra-ui/react'
 import { Link, useMatchRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { LuUsers, LuShield, LuBoxes, LuChevronsLeft, LuBuilding2, LuChevronsRight } from 'react-icons/lu'
-import { useColorModeValue } from './ui/color-mode'
 
 function Sidebar() {
   const { currentUser } = useAuth()
@@ -18,7 +17,7 @@ function Sidebar() {
   }
 
   const navItems = [
-    { to: '/dashboard/organizations', label: 'Organizations', icon: LuBuilding2, requiredPermission: 'read:all_organizations', platformOnly: true },
+    { to: '/dashboard/organizations', label: 'Organizations', icon: LuBuilding2, requiredPermission: 'read:organizations', platformOnly: true },
     { to: '/dashboard/users', label: 'Users', icon: LuUsers, requiredPermission: 'read:users' },
     { to: '/dashboard/roles', label: 'Roles', icon: LuShield, requiredPermission: 'read:roles' },
     { to: '/dashboard/items', label: 'Items', icon: LuBoxes, requiredPermission: 'read:items' },
@@ -44,9 +43,6 @@ function Sidebar() {
   // Toggle collapse state for desktop
   const toggleCollapse = () => setIsCollapsed(!isCollapsed)
 
-  const bgMain = useColorModeValue('', 'gray.950') // Assuming these are from your Dashboard component context
-  const bgSide = useColorModeValue('gray.50', '') // Moved here for completeness
-
 
   return (
     <>
@@ -62,7 +58,6 @@ function Sidebar() {
         transition="width 0.2s ease"
         zIndex="docked"
         overflow="hidden" // Hides content that exceeds width during collapse transition
-        bg={bgSide} // Apply sidebar background color
       >
         <Flex
           direction="column"
@@ -97,9 +92,6 @@ function Sidebar() {
                     borderRadius="md"
                     w="100%"
                     fontWeight={isActive ? 'semibold' : 'normal'}
-                    // Optional: Highlight active link
-                    bg={isActive ? useColorModeValue('gray.200', 'gray.700') : 'transparent'}
-                    _hover={{ bg: useColorModeValue('gray.100', 'gray.800') }}
                   >
                     <item.icon size={20} style={{ marginRight: isCollapsed ? 0 : 12 }} />
                     {!isCollapsed && <Text fontSize="md">{item.label}</Text>}

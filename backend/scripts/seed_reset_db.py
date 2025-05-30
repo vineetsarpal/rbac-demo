@@ -36,7 +36,7 @@ def seed_data():
 
         org0 = db.query(models.Organization).filter(models.Organization.id == org1_id).first()
         if not org0:
-            org0 = models.Organization(id=org0_id, name="superadmin", slug="default")
+            org0 = models.Organization(id=org0_id, name="superadmin", slug="")
             db.add(org0)
             db.commit()
             db.refresh(org0)
@@ -252,6 +252,7 @@ def seed_data():
 
         # --- Assign Permissions to Roles ---
         superadmin_role.permissions.extend([p for p in created_permissions.values() if p not in superadmin_role.permissions])
+        
         admin_role_perms = [
             created_permissions["create:users"], created_permissions["read:users"], created_permissions["update:users"], created_permissions["delete:users"],
             created_permissions["create:roles"], created_permissions["read:roles"], created_permissions["update:roles"], created_permissions["delete:roles"],

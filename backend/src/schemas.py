@@ -17,6 +17,7 @@ class TokenData(BaseModel):
 class OrganizationBase(BaseModel):
     id: str
     name: str
+    slug: str
 
 class OrganizationCreate(OrganizationBase):
     pass
@@ -29,16 +30,16 @@ class UserBase(BaseModel):
     username: str
     email: EmailStr | None = None
     name: str | None = None
+    organization_id: str
 
 class UserCreate(UserBase):
-    pass
+    password: str
 
 class UserPublic(UserBase):
     id: int
     is_active: bool | None = True
     created_at: datetime 
     updated_at: datetime
-    organization_id: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 

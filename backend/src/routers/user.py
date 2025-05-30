@@ -53,9 +53,10 @@ def get_user(user_id: int, db: Session = Depends(get_db), current_user: schemas.
 
 # Get User's Organization   
 @router.get("/{user_id}/organization", response_model=schemas.OrganizationPublic)
-async def get_user_organization(user_id: int, db: Session = Depends(get_db)):
-    user_org_query = db.query(models.User).join(models.User.organization)
-    user = user_org_query.filter(models.User.id == user_id).first()
+async def get_user_organization(user_id: int, db: Session = Depends(get_db), current_user: schemas.CurrentUser = Depends(security.get_current_active_user)):
+    user_org_query = db.query(models.User).join(models.Organization,
+                                                models.User.organization_id == models.Organization.id)
+    user = user_org_query.filter(models.User.organization_id == current_user.organization_id).first()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=f"User with ID: {user_id} not found or not accessible by your organization.")

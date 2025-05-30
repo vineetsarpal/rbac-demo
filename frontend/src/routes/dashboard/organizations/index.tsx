@@ -1,22 +1,20 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import {  Button, Card, Dialog, Field, Flex, Input, Portal, SimpleGrid, useDisclosure } from "@chakra-ui/react"
-import { Link } from "@tanstack/react-router"
-import type { paths } from "@/types/openapi"
-import { API_BASE_URL } from "@/config"
-import { useAuth } from "@/contexts/AuthContext"
-import { useForm } from "react-hook-form"
+import { API_BASE_URL } from '@/config'
+import { useAuth } from '@/contexts/AuthContext'
+import type { paths } from '@/types/openapi'
+import { Button, Card, Dialog, Field, Flex, Input, Portal, SimpleGrid, useDisclosure } from '@chakra-ui/react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { useForm } from 'react-hook-form'
 
-import { createFileRoute } from '@tanstack/react-router'
-
-export const Route = createFileRoute('/dashboard/items/')({
+export const Route = createFileRoute('/dashboard/organizations/')({
   component: RouteComponent,
 })
 
-type Item = paths["/items/{item_id}"]["get"]["responses"]["200"]["content"]["application/json"]
-type CreateItemPayload = paths["/items/"]["post"]["requestBody"]["content"]["application/json"]
+type Organization = paths["/organizations/{organization_id}"]["get"]["responses"]["200"]["content"]["application/json"]
+type CreateOrganizationPayload = paths["/organizations/"]["post"]["requestBody"]["content"]["application/json"]
 
-const getItems = async (token: string | null) => {
-    const res = await fetch(`${API_BASE_URL}/items`, {
+const getOrganizations = async (token: string | null) => {
+    const res = await fetch(`${API_BASE_URL}/organizations`, {
         headers: {
           "Authorization": `Bearer ${token}`,
         },
@@ -26,9 +24,9 @@ const getItems = async (token: string | null) => {
     return res.json()
 }
 
-const createItem = async (payload: { data: CreateItemPayload, token: string | null }) => {
+const createOrganization = async (payload: { data: CreateOrganizationPayload, token: string | null }) => {
     const { data, token } = payload
-    const res = await fetch(`${API_BASE_URL}/items`, {
+    const res = await fetch(`${API_BASE_URL}/organizations`, {
         method: 'POST',
         headers: {
             "Content-Type": "application/json",
@@ -40,13 +38,13 @@ const createItem = async (payload: { data: CreateItemPayload, token: string | nu
     return res.json()
 }
 
-function CreateItemDialog({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+function CreateOrganizationDialog({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
     const { token } = useAuth()
     const queryClient = useQueryClient()
-    const { register, handleSubmit, reset } = useForm<CreateItemPayload>()
+    const { register, handleSubmit, reset } = useForm<CreateOrganizationPayload>()
 
     const { mutate: createMutate, isPending } = useMutation({
-        mutationFn: createItem,
+        mutationFn: createOrganization,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["items"] })
             reset()
@@ -54,7 +52,7 @@ function CreateItemDialog({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
         }
     })
 
-    const onSubmit = (data: CreateItemPayload) => {
+    const onSubmit = (data: CreateOrganizationPayload) => {
         createMutate({ data, token })
     }
 
@@ -65,17 +63,21 @@ function CreateItemDialog({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
               <Dialog.Positioner>
                   <Dialog.Content>
                       <Dialog.Header>
-                          <Dialog.Title>Create New Item</Dialog.Title>
+                          <Dialog.Title>Create New Organization</Dialog.Title>
                       </Dialog.Header>
                       <Dialog.Body>
                           <form onSubmit={handleSubmit(onSubmit)}>
+                              <Field.Root>
+                                  <Field.Label>Id</Field.Label>
+                                  <Input {...register("id")} />
+                              </Field.Root>                            
                               <Field.Root>
                                   <Field.Label>Name</Field.Label>
                                   <Input {...register("name")} />
                               </Field.Root>
                               <Field.Root mt={4}>
-                                  <Field.Label>Price</Field.Label>
-                                  <Input {...register("price")} type="number" />
+                                  <Field.Label>slug</Field.Label>
+                                  <Input {...register("slug")} />
                               </Field.Root>
                           </form>
                       </Dialog.Body>
@@ -100,9 +102,9 @@ function RouteComponent() {
     const { token, currentUser } = useAuth()
     const { open, onOpen, onClose } = useDisclosure()
 
-    const { data, isLoading, error } = useQuery<Item[]>({
+    const { data, isLoading, error } = useQuery<Organization[]>({
         queryKey: ['items'],
-        queryFn: () => getItems(token),
+        queryFn: () => getOrganizations(token),
         staleTime: 5000,
         enabled: !!token
     })
@@ -118,25 +120,25 @@ function RouteComponent() {
             onClick={onOpen}
             disabled={!currentUser?.permissions.includes("create:items")}
         >
-            Create New Item
+            Create New Organization
         </Button>
       </Flex>
       
       <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} gap={10}>
         {
-          data?.map((item: Item) => (
-                <Card.Root key={item.id}> 
-                  <Link to="/dashboard/items/$itemId" params={{ itemId: item.id.toString() }} >
-                    <Card.Header>{item.name}</Card.Header>
+          data?.map((organization: Organization) => (
+                <Card.Root key={organization.id}> 
+                  <Link to="/dashboard/organizations/$organizationId" params={{ organizationId: organization.id.toString() }} >
+                    <Card.Header>{organization.name}</Card.Header>
                     <Card.Body>
-                        Price: {item.price}
+                        slug: {organization.slug}
                     </Card.Body>
                   </Link>
                 </Card.Root>
           ))
         }
       </SimpleGrid>
-      <CreateItemDialog isOpen={open} onClose={onClose} />
+      <CreateOrganizationDialog isOpen={open} onClose={onClose} />
     </>
   )
 }

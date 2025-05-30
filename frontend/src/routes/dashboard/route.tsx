@@ -1,11 +1,35 @@
 import Sidebar from '@/components/Sidebar'
 import { useColorModeValue } from '@/components/ui/color-mode'
-import { Grid, GridItem, Box } from '@chakra-ui/react'
-import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { Grid, GridItem, Box, Heading } from '@chakra-ui/react'
+import { createFileRoute, Outlet, useMatchRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/dashboard')({
   component: RouteComponent,
 })
+
+const routes = {
+  "/dashboard/organizations": "Organizations",
+  "/dashboard/users": "Users",
+  "/dashboard/roles": "Roles",
+  "/dashboard/items": "Items"
+}
+
+function PageHeading() {
+  const matchRoute = useMatchRoute()
+  
+  const getCurrentHeading = () => {
+    const match = Object.entries(routes).find(([route]) => 
+      matchRoute({ to: route as any })
+    )
+    return match ? match[1] : ""
+  }
+
+  return (
+    <Heading size="lg" mb={6}>
+      {getCurrentHeading()}
+    </Heading>
+  )
+}
 
 function RouteComponent() {
   const bgMain = useColorModeValue('', 'gray.950')
@@ -38,6 +62,7 @@ function RouteComponent() {
           mb={2}
         >
           <Box maxW="container.xl" mx="auto">
+            <PageHeading />
             <Outlet />
           </Box>
         </GridItem>

@@ -17,9 +17,11 @@ import { Route as IndexImport } from './routes/index'
 import { Route as DashboardIndexImport } from './routes/dashboard/index'
 import { Route as DashboardUsersIndexImport } from './routes/dashboard/users/index'
 import { Route as DashboardRolesIndexImport } from './routes/dashboard/roles/index'
+import { Route as DashboardOrganizationsIndexImport } from './routes/dashboard/organizations/index'
 import { Route as DashboardItemsIndexImport } from './routes/dashboard/items/index'
 import { Route as DashboardUsersUserIdImport } from './routes/dashboard/users/$userId'
 import { Route as DashboardRolesRoleIdImport } from './routes/dashboard/roles/$roleId'
+import { Route as DashboardOrganizationsOrganizationIdImport } from './routes/dashboard/organizations/$organizationId'
 import { Route as DashboardItemsItemIdImport } from './routes/dashboard/items/$itemId'
 
 // Create/Update Routes
@@ -60,6 +62,13 @@ const DashboardRolesIndexRoute = DashboardRolesIndexImport.update({
   getParentRoute: () => DashboardRouteRoute,
 } as any)
 
+const DashboardOrganizationsIndexRoute =
+  DashboardOrganizationsIndexImport.update({
+    id: '/organizations/',
+    path: '/organizations/',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+
 const DashboardItemsIndexRoute = DashboardItemsIndexImport.update({
   id: '/items/',
   path: '/items/',
@@ -77,6 +86,13 @@ const DashboardRolesRoleIdRoute = DashboardRolesRoleIdImport.update({
   path: '/roles/$roleId',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+
+const DashboardOrganizationsOrganizationIdRoute =
+  DashboardOrganizationsOrganizationIdImport.update({
+    id: '/organizations/$organizationId',
+    path: '/organizations/$organizationId',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
 
 const DashboardItemsItemIdRoute = DashboardItemsItemIdImport.update({
   id: '/items/$itemId',
@@ -123,6 +139,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardItemsItemIdImport
       parentRoute: typeof DashboardRouteImport
     }
+    '/dashboard/organizations/$organizationId': {
+      id: '/dashboard/organizations/$organizationId'
+      path: '/organizations/$organizationId'
+      fullPath: '/dashboard/organizations/$organizationId'
+      preLoaderRoute: typeof DashboardOrganizationsOrganizationIdImport
+      parentRoute: typeof DashboardRouteImport
+    }
     '/dashboard/roles/$roleId': {
       id: '/dashboard/roles/$roleId'
       path: '/roles/$roleId'
@@ -142,6 +165,13 @@ declare module '@tanstack/react-router' {
       path: '/items'
       fullPath: '/dashboard/items'
       preLoaderRoute: typeof DashboardItemsIndexImport
+      parentRoute: typeof DashboardRouteImport
+    }
+    '/dashboard/organizations/': {
+      id: '/dashboard/organizations/'
+      path: '/organizations'
+      fullPath: '/dashboard/organizations'
+      preLoaderRoute: typeof DashboardOrganizationsIndexImport
       parentRoute: typeof DashboardRouteImport
     }
     '/dashboard/roles/': {
@@ -166,9 +196,11 @@ declare module '@tanstack/react-router' {
 interface DashboardRouteRouteChildren {
   DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardItemsItemIdRoute: typeof DashboardItemsItemIdRoute
+  DashboardOrganizationsOrganizationIdRoute: typeof DashboardOrganizationsOrganizationIdRoute
   DashboardRolesRoleIdRoute: typeof DashboardRolesRoleIdRoute
   DashboardUsersUserIdRoute: typeof DashboardUsersUserIdRoute
   DashboardItemsIndexRoute: typeof DashboardItemsIndexRoute
+  DashboardOrganizationsIndexRoute: typeof DashboardOrganizationsIndexRoute
   DashboardRolesIndexRoute: typeof DashboardRolesIndexRoute
   DashboardUsersIndexRoute: typeof DashboardUsersIndexRoute
 }
@@ -176,9 +208,12 @@ interface DashboardRouteRouteChildren {
 const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardIndexRoute: DashboardIndexRoute,
   DashboardItemsItemIdRoute: DashboardItemsItemIdRoute,
+  DashboardOrganizationsOrganizationIdRoute:
+    DashboardOrganizationsOrganizationIdRoute,
   DashboardRolesRoleIdRoute: DashboardRolesRoleIdRoute,
   DashboardUsersUserIdRoute: DashboardUsersUserIdRoute,
   DashboardItemsIndexRoute: DashboardItemsIndexRoute,
+  DashboardOrganizationsIndexRoute: DashboardOrganizationsIndexRoute,
   DashboardRolesIndexRoute: DashboardRolesIndexRoute,
   DashboardUsersIndexRoute: DashboardUsersIndexRoute,
 }
@@ -193,9 +228,11 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/items/$itemId': typeof DashboardItemsItemIdRoute
+  '/dashboard/organizations/$organizationId': typeof DashboardOrganizationsOrganizationIdRoute
   '/dashboard/roles/$roleId': typeof DashboardRolesRoleIdRoute
   '/dashboard/users/$userId': typeof DashboardUsersUserIdRoute
   '/dashboard/items': typeof DashboardItemsIndexRoute
+  '/dashboard/organizations': typeof DashboardOrganizationsIndexRoute
   '/dashboard/roles': typeof DashboardRolesIndexRoute
   '/dashboard/users': typeof DashboardUsersIndexRoute
 }
@@ -205,9 +242,11 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/dashboard': typeof DashboardIndexRoute
   '/dashboard/items/$itemId': typeof DashboardItemsItemIdRoute
+  '/dashboard/organizations/$organizationId': typeof DashboardOrganizationsOrganizationIdRoute
   '/dashboard/roles/$roleId': typeof DashboardRolesRoleIdRoute
   '/dashboard/users/$userId': typeof DashboardUsersUserIdRoute
   '/dashboard/items': typeof DashboardItemsIndexRoute
+  '/dashboard/organizations': typeof DashboardOrganizationsIndexRoute
   '/dashboard/roles': typeof DashboardRolesIndexRoute
   '/dashboard/users': typeof DashboardUsersIndexRoute
 }
@@ -219,9 +258,11 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/items/$itemId': typeof DashboardItemsItemIdRoute
+  '/dashboard/organizations/$organizationId': typeof DashboardOrganizationsOrganizationIdRoute
   '/dashboard/roles/$roleId': typeof DashboardRolesRoleIdRoute
   '/dashboard/users/$userId': typeof DashboardUsersUserIdRoute
   '/dashboard/items/': typeof DashboardItemsIndexRoute
+  '/dashboard/organizations/': typeof DashboardOrganizationsIndexRoute
   '/dashboard/roles/': typeof DashboardRolesIndexRoute
   '/dashboard/users/': typeof DashboardUsersIndexRoute
 }
@@ -234,9 +275,11 @@ export interface FileRouteTypes {
     | '/login'
     | '/dashboard/'
     | '/dashboard/items/$itemId'
+    | '/dashboard/organizations/$organizationId'
     | '/dashboard/roles/$roleId'
     | '/dashboard/users/$userId'
     | '/dashboard/items'
+    | '/dashboard/organizations'
     | '/dashboard/roles'
     | '/dashboard/users'
   fileRoutesByTo: FileRoutesByTo
@@ -245,9 +288,11 @@ export interface FileRouteTypes {
     | '/login'
     | '/dashboard'
     | '/dashboard/items/$itemId'
+    | '/dashboard/organizations/$organizationId'
     | '/dashboard/roles/$roleId'
     | '/dashboard/users/$userId'
     | '/dashboard/items'
+    | '/dashboard/organizations'
     | '/dashboard/roles'
     | '/dashboard/users'
   id:
@@ -257,9 +302,11 @@ export interface FileRouteTypes {
     | '/login'
     | '/dashboard/'
     | '/dashboard/items/$itemId'
+    | '/dashboard/organizations/$organizationId'
     | '/dashboard/roles/$roleId'
     | '/dashboard/users/$userId'
     | '/dashboard/items/'
+    | '/dashboard/organizations/'
     | '/dashboard/roles/'
     | '/dashboard/users/'
   fileRoutesById: FileRoutesById
@@ -300,9 +347,11 @@ export const routeTree = rootRoute
       "children": [
         "/dashboard/",
         "/dashboard/items/$itemId",
+        "/dashboard/organizations/$organizationId",
         "/dashboard/roles/$roleId",
         "/dashboard/users/$userId",
         "/dashboard/items/",
+        "/dashboard/organizations/",
         "/dashboard/roles/",
         "/dashboard/users/"
       ]
@@ -318,6 +367,10 @@ export const routeTree = rootRoute
       "filePath": "dashboard/items/$itemId.tsx",
       "parent": "/dashboard"
     },
+    "/dashboard/organizations/$organizationId": {
+      "filePath": "dashboard/organizations/$organizationId.tsx",
+      "parent": "/dashboard"
+    },
     "/dashboard/roles/$roleId": {
       "filePath": "dashboard/roles/$roleId.tsx",
       "parent": "/dashboard"
@@ -328,6 +381,10 @@ export const routeTree = rootRoute
     },
     "/dashboard/items/": {
       "filePath": "dashboard/items/index.tsx",
+      "parent": "/dashboard"
+    },
+    "/dashboard/organizations/": {
+      "filePath": "dashboard/organizations/index.tsx",
       "parent": "/dashboard"
     },
     "/dashboard/roles/": {

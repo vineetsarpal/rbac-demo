@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from src.database import engine, Base, get_db
 from src import schemas, models, security
 from src.config import settings
-from src.routers import auth, user, role, permission, item
+from src.routers import auth, organization, user, role, permission, item
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from typing import Annotated
@@ -29,11 +29,12 @@ app.add_middleware(
 )
 
 # === Routers ===
-app.include_router(router=auth.router)
-app.include_router(router=user.router)
-app.include_router(router=role.router)
-app.include_router(router=permission.router)
-app.include_router(router=item.router)
+app.include_router(auth.router)
+app.include_router(organization.router)
+app.include_router(user.router)
+app.include_router(role.router)
+app.include_router(permission.router)
+app.include_router(item.router)
 
 @app.get("/")
 async def root():
