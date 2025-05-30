@@ -35,6 +35,9 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     password: str
 
+class UserUpdate(UserBase):
+    pass
+
 class UserPublic(UserBase):
     id: int
     is_active: bool | None = True

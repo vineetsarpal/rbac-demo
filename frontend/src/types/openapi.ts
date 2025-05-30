@@ -38,6 +38,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/users/me/organization": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Users Me Organization */
+        get: operations["read_users_me_organization_auth_users_me_organization_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/organizations/": {
         parameters: {
             query?: never;
@@ -531,6 +548,17 @@ export interface components {
              */
             updated_at: string;
         };
+        /** UserUpdate */
+        UserUpdate: {
+            /** Username */
+            username: string;
+            /** Email */
+            email?: string | null;
+            /** Name */
+            name?: string | null;
+            /** Organization Id */
+            organization_id: string;
+        };
         /** ValidationError */
         ValidationError: {
             /** Location */
@@ -598,6 +626,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CurrentUser"];
+                };
+            };
+        };
+    };
+    read_users_me_organization_auth_users_me_organization_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrganizationPublic"];
                 };
             };
         };
@@ -672,7 +720,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                organization_id: number;
+                organization_id: string;
             };
             cookie?: never;
         };
@@ -703,7 +751,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                organization_id: number;
+                organization_id: string;
             };
             cookie?: never;
         };
@@ -738,7 +786,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                organization_id: number;
+                organization_id: string;
             };
             cookie?: never;
         };
@@ -871,7 +919,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UserCreate"];
+                "application/json": components["schemas"]["UserUpdate"];
             };
         };
         responses: {

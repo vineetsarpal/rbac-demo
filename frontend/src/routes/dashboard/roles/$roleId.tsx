@@ -6,9 +6,11 @@ import {
   Checkbox,
   CloseButton,
   Dialog,
+  Field,
   Flex,
   Heading,
   HStack,
+  Input,
   Portal,
   Spacer,
   Tabs,
@@ -22,6 +24,7 @@ import { LuUser, LuSquareCheck, LuArrowLeft } from "react-icons/lu";
 
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/contexts/AuthContext";
+import { useForm } from "react-hook-form";
 
 export const Route = createFileRoute("/dashboard/roles/$roleId")({
   component: RouteComponent,
@@ -31,6 +34,8 @@ type Role =
   paths["/roles/{role_id}"]["get"]["responses"]["200"]["content"]["application/json"];
 type Permission =
   paths["/permissions/{permission_id}"]["get"]["responses"]["200"]["content"]["application/json"];
+type UpdatePayload =
+  paths["/roles/{role_id}"]["put"]["requestBody"]["content"]["application/json"];
 
 interface PermissionWithAssignment extends Permission {
   assigned: boolean;
@@ -43,6 +48,24 @@ const getRole = async (id: string, token: string | null) => {
     },
   });
   if (!res.ok) throw new Error("Error fetching data!");
+  return res.json();
+};
+
+const updateRole = async (payload: {
+  id: string;
+  data: UpdatePayload;
+  token: string | null;
+}) => {
+  const { id, data, token } = payload;
+  const res = await fetch(`${API_BASE_URL}/roles/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Error updating role!");
   return res.json();
 };
 
@@ -90,6 +113,40 @@ function RouteComponent() {
     queryFn: () => getRole(roleId, token),
     enabled: !!roleId,
   });
+
+  const { register, handleSubmit, reset } = useForm<UpdatePayload>({
+    defaultValues: roleData || {},
+  });
+
+  // Reset form when role data loads or updates
+  useEffect(() => {
+    if (roleData) {
+      reset(roleData);
+    }
+  }, [roleData, reset]);
+
+  // Edit mutation
+  const { mutate: editMutate } = useMutation({
+    mutationFn: updateRole,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["roles", roleId] });
+      setEditMode(false);
+      toaster.create({
+        title: "Role updated successfully",
+        type: "success",
+      });
+    },
+    onError: (error) => {
+      toaster.create({
+        title: error.message,
+        type: "error",
+      });
+    },
+  });
+
+  const onSubmit = (formData: UpdatePayload) => {
+    editMutate({ id: roleId, data: formData, token });
+  };
 
   const { data: permissionData } = useQuery<PermissionWithAssignment[]>({
     queryKey: ["permissions", roleId],
@@ -170,18 +227,18 @@ function RouteComponent() {
     updateRolesMutation.mutate(selectedPermissionIds);
   };
 
-    // Delete
-    const { mutate: deleteMutate, isPending } = useMutation({
-      mutationFn: deleteRole,
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["roles"] });
-        navigate({ to: `/dashboard/roles` });
-      },
-    });
-  
-    const confirmDelete = () => {
-      if (roleId && token) deleteMutate({ id: roleId, token });
-    };
+  // Delete
+  const { mutate: deleteMutate, isPending } = useMutation({
+    mutationFn: deleteRole,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["roles"] });
+      navigate({ to: `/dashboard/roles` });
+    },
+  });
+
+  const confirmDelete = () => {
+    if (roleId && token) deleteMutate({ id: roleId, token });
+  };
 
   if (isLoading || !roleData) return <p>Loading...</p>;
 
@@ -192,17 +249,15 @@ function RouteComponent() {
       <Toaster />
 
       <Flex align="center" mb={6} gap={4}>
-        <Heading size="lg">
-          Role: {roleData?.name}
-        </Heading>
+        <Heading size="lg">Role: {roleData?.name}</Heading>
 
         <Spacer />
-        
+
         <Button
           variant="ghost"
           onClick={() => navigate({ to: "/dashboard/roles" })}
         >
-         <LuArrowLeft /> Back to Roles
+          <LuArrowLeft /> Back to Roles
         </Button>
       </Flex>
 
@@ -233,20 +288,32 @@ function RouteComponent() {
               <Heading as="h2" size="lg" mb={2}>
                 Role Details
               </Heading>
-              <Text>Name: {roleData?.name}</Text>
-              <Text>Description: {roleData?.description}</Text>
+              <Field.Root>
+                <Field.Label>Name</Field.Label>
+                <Input {...register("name")} disabled={!editMode} />
+              </Field.Root>
+              <Field.Root>
+                <Field.Label>Description</Field.Label>
+                <Input {...register("description")} disabled={!editMode} />
+              </Field.Root>
               <Flex justifyContent="center" mt={6}>
                 {editMode ? (
                   <HStack w={"100%"} gap={4}>
                     <Button
-                      onClick={handleSave}
-                      loading={isLoading}
-                      loadingText="Saving.."
+                      onClick={handleSubmit(onSubmit)}
+                      loadingText="Saving..."
                       flex={1}
                     >
                       Save
                     </Button>
-                    <Button variant="outline" onClick={handleCancel} flex={1}>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        reset();
+                        setEditMode(false);
+                      }}
+                      flex={1}
+                    >
                       Cancel
                     </Button>
                   </HStack>
@@ -296,7 +363,10 @@ function RouteComponent() {
                                 colorPalette="red"
                                 onClick={confirmDelete}
                                 loading={isPending}
-                                disabled={roleData.name === "superadmin" || roleData.name === "admin"}
+                                disabled={
+                                  roleData.name === "superadmin" ||
+                                  roleData.name === "admin"
+                                }
                               >
                                 Delete
                               </Button>

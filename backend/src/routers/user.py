@@ -67,7 +67,7 @@ async def get_user_organization(user_id: int, db: Session = Depends(get_db)):
 
 # Update User with id
 @router.put("/{user_id}", response_model=schemas.UserPublic)
-def update_user(user_id: int, updated_user: schemas.UserCreate, db: Session = Depends(get_db), current_user = Depends(security.get_current_user)):
+def update_user(user_id: int, updated_user: schemas.UserUpdate, db: Session = Depends(get_db), current_user = Depends(security.get_current_user)):
     # Check permissions
     user_permissions = current_user.permissions
     if "update:users" not in user_permissions:

@@ -9,7 +9,7 @@ export const Route = createFileRoute('/dashboard')({
 })
 
 function RouteComponent() {
-  const bgMain = useColorModeValue('', 'gray.950')
+  const bgMain = useColorModeValue('', 'gray.700')
   const bgSide = useColorModeValue('gray.50','')
 
   return (

@@ -7,9 +7,11 @@ import {
   Checkbox,
   CloseButton,
   Dialog,
+  Field,
   Flex,
   Heading,
   HStack,
+  Input,
   Portal,
   Spacer,
   Tabs,
@@ -22,6 +24,7 @@ import { useEffect, useState } from "react";
 import { userService } from "@/services/userService";
 import { Toaster, toaster } from "@/components/ui/toaster";
 import { LuArrowLeft, LuSquareCheck, LuUser } from "react-icons/lu";
+import { useForm } from "react-hook-form";
 
 export const Route = createFileRoute("/dashboard/users/$userId")({
   component: RouteComponent,
@@ -33,6 +36,8 @@ type Role =
   paths["/roles/{role_id}"]["get"]["responses"]["200"]["content"]["application/json"];
 type Organization =
   paths["/organizations/{organization_id}"]["get"]["responses"]["200"]["content"]["application/json"];
+type UpdatePayload =
+  paths["/users/{user_id}"]["put"]["requestBody"]["content"]["application/json"];
 
 interface RoleWithAssignment extends Role {
   assigned: boolean;
@@ -45,6 +50,24 @@ const getUser = async (id: string, token: string | null) => {
     },
   });
   if (!res.ok) throw new Error("Error fetching data!");
+  return res.json();
+};
+
+const updateUser = async (payload: {
+  id: string;
+  data: UpdatePayload;
+  token: string | null;
+}) => {
+  const { id, data, token } = payload;
+  const res = await fetch(`${API_BASE_URL}/users/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Error updating user!");
   return res.json();
 };
 
@@ -84,6 +107,40 @@ function RouteComponent() {
     queryFn: () => getUser(userId, token),
     enabled: !!userId,
   });
+
+  const { register, handleSubmit, reset } = useForm<UpdatePayload>({
+    defaultValues: userData || {},
+  });
+
+  // Reset form when user data loads or updates
+  useEffect(() => {
+    if (userData) {
+      reset(userData);
+    }
+  }, [userData, reset]);
+
+  // Edit mutation
+  const { mutate: editMutate } = useMutation({
+    mutationFn: updateUser,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users", userId] });
+      setEditMode(false);
+      toaster.create({
+        title: "User updated successfully",
+        type: "success",
+      });
+    },
+    onError: (error) => {
+      toaster.create({
+        title: error.message,
+        type: "error",
+      });
+    },
+  });
+
+  const onSubmit = (formData: UpdatePayload) => {
+    editMutate({ id: userId, data: formData, token });
+  };
 
   const { data: roleData } = useQuery<RoleWithAssignment[]>({
     queryKey: ["roles", userId],
@@ -185,17 +242,15 @@ function RouteComponent() {
       <Toaster />
 
       <Flex align="center" mb={6} gap={4}>
-        <Heading size="lg">
-          User: {userData?.name}
-        </Heading>
+        <Heading size="lg">User: {userData?.name}</Heading>
 
         <Spacer />
-        
+
         <Button
           variant="ghost"
           onClick={() => navigate({ to: "/dashboard/users" })}
         >
-         <LuArrowLeft /> Back to Users
+          <LuArrowLeft /> Back to Users
         </Button>
       </Flex>
 
@@ -226,22 +281,49 @@ function RouteComponent() {
               <Heading as="h2" size="lg" mb={2}>
                 User Details
               </Heading>
-              <Text>Name: {userData?.name}</Text>
-              <Text>Username: {userData?.username}</Text>
-              <Text>Email: {userData?.email}</Text>
-              <Text>Organization: {organizationData?.name}</Text>
+
+              {currentUser?.is_platform_admin ? (
+                <Field.Root>
+                  <Field.Label>Organization Id</Field.Label>
+                  <Input {...register("organization_id")} disabled={!editMode} />
+              </Field.Root>
+              ) : (
+                <>
+                  <Text>Organization: {organizationData?.name}</Text>
+                  <Input {...register("organization_id")} type="hidden" />
+                </>
+              )}
+              <Field.Root>
+                <Field.Label>Name</Field.Label>
+                <Input {...register("name")} disabled={!editMode} />
+              </Field.Root>
+              <Field.Root>
+                <Field.Label>Username</Field.Label>
+                <Input {...register("username")} disabled={!editMode} />
+              </Field.Root>
+              <Field.Root>
+                <Field.Label>Email</Field.Label>
+                <Input {...register("email")} disabled={!editMode} />
+              </Field.Root>
+
               <Flex justifyContent="center" mt={6}>
                 {editMode ? (
                   <HStack w={"100%"} gap={4}>
                     <Button
-                      onClick={handleSave}
-                      loading={isLoading}
-                      loadingText="Saving.."
+                      onClick={handleSubmit(onSubmit)}
+                      loadingText="Saving..."
                       flex={1}
                     >
                       Save
                     </Button>
-                    <Button variant="outline" onClick={handleCancel} flex={1}>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        reset();
+                        setEditMode(false);
+                      }}
+                      flex={1}
+                    >
                       Cancel
                     </Button>
                   </HStack>
@@ -263,9 +345,11 @@ function RouteComponent() {
                           variant="solid"
                           colorPalette={"red"}
                           disabled={
-                            userData.username === "superadmin"
-                            || !currentUser?.permissions.includes("delete:users")
-                            || currentUser.id === userData.id
+                            userData.username === "superadmin" ||
+                            !currentUser?.permissions.includes(
+                              "delete:users"
+                            ) ||
+                            currentUser.id === userData.id
                           }
                           flex={1}
                         >
