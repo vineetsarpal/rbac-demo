@@ -13,13 +13,27 @@ export const userService = {
             },
         })
         if (!res.ok) {
-            throw new Error (res.status === 401 ? "Token expired" : "Failed to fetch user")
+            throw new Error ("Failed to fetch Current User")
             }
         return res.json()
     },
 
     // Get current user's organization
-    getCurrentUserOrg: async (userId: string, token: string | null): Promise<Organization> => {
+
+    getCurrentUserOrg: async (token: string | null): Promise<Organization> => {
+         const res = await fetch(`${API_BASE_URL}/auth/users/me/organization`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+        })
+        if (!res.ok) {
+            throw new Error('Failed to fetch user organization');
+        }
+        return res.json()
+    },
+
+    getUserOrg: async (userId: string, token: string | null): Promise<Organization> => {
          const res = await fetch(`${API_BASE_URL}/users/${userId}/organization`, {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -30,5 +44,6 @@ export const userService = {
             throw new Error('Failed to fetch user organization');
         }
         return res.json()
-    }
+    },
+
 }

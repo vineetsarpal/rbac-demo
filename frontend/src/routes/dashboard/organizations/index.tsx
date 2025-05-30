@@ -1,7 +1,7 @@
 import { API_BASE_URL } from '@/config'
 import { useAuth } from '@/contexts/AuthContext'
 import type { paths } from '@/types/openapi'
-import { Button, Card, Dialog, Field, Flex, Input, Portal, SimpleGrid, useDisclosure } from '@chakra-ui/react'
+import { Button, Card, Dialog, Field, Flex, Heading, Input, Portal, SimpleGrid, useDisclosure } from '@chakra-ui/react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useForm } from 'react-hook-form'
@@ -46,7 +46,7 @@ function CreateOrganizationDialog({ isOpen, onClose }: { isOpen: boolean; onClos
     const { mutate: createMutate, isPending } = useMutation({
         mutationFn: createOrganization,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["items"] })
+            queryClient.invalidateQueries({ queryKey: ["organizations"] })
             reset()
             onClose()
         }
@@ -76,7 +76,7 @@ function CreateOrganizationDialog({ isOpen, onClose }: { isOpen: boolean; onClos
                                   <Input {...register("name")} />
                               </Field.Root>
                               <Field.Root mt={4}>
-                                  <Field.Label>slug</Field.Label>
+                                  <Field.Label>domain</Field.Label>
                                   <Input {...register("slug")} />
                               </Field.Root>
                           </form>
@@ -115,6 +115,10 @@ function RouteComponent() {
 
   return (
     <>
+    <Heading size="lg" mb={6}>
+        Organizations
+    </Heading>
+
       <Flex justify="flex-end" mb={4}>
         <Button 
             onClick={onOpen}
@@ -127,14 +131,14 @@ function RouteComponent() {
       <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} gap={10}>
         {
           data?.map((organization: Organization) => (
-                <Card.Root key={organization.id}> 
-                  <Link to="/dashboard/organizations/$organizationId" params={{ organizationId: organization.id.toString() }} >
-                    <Card.Header>{organization.name}</Card.Header>
-                    <Card.Body>
-                        slug: {organization.slug}
-                    </Card.Body>
-                  </Link>
-                </Card.Root>
+            <Card.Root key={organization.id}> 
+                <Link to="/dashboard/organizations/$organizationId" params={{ organizationId: organization.id.toString() }} >
+                <Card.Header>{organization.name}</Card.Header>
+                <Card.Body>
+                    domain: {organization.slug}
+                </Card.Body>
+                </Link>
+            </Card.Root>
           ))
         }
       </SimpleGrid>

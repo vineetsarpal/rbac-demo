@@ -34,9 +34,12 @@ async def get_users(skip: int = 0, limit: int = 10, db: Session = Depends(get_db
     user_permissions = current_user.permissions
     if "read:users" not in user_permissions:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions to perform this action!")
-    users = db.query(models.User).filter(models.User.organization_id == current_user.organization_id).offset(skip).limit(limit).all()
+    
+    users_query = db.query(models.User)
+    if not current_user.is_platform_admin:
+        users_query = users_query.filter(models.User.organization_id == current_user.organization_id)
+    users = users_query.offset(skip).limit(limit).all()
     return users
-
 
 # Get User with id
 @router.get("/{user_id}", response_model=schemas.UserPublic)
@@ -53,17 +56,14 @@ def get_user(user_id: int, db: Session = Depends(get_db), current_user: schemas.
 
 # Get User's Organization   
 @router.get("/{user_id}/organization", response_model=schemas.OrganizationPublic)
-async def get_user_organization(user_id: int, db: Session = Depends(get_db), current_user: schemas.CurrentUser = Depends(security.get_current_active_user)):
-    user_org_query = db.query(models.User).join(models.Organization,
-                                                models.User.organization_id == models.Organization.id)
-    user = user_org_query.filter(models.User.organization_id == current_user.organization_id).first()
-    if not user:
+async def get_user_organization(user_id: int, db: Session = Depends(get_db)):
+    user_org_query = db.query(models.Organization).join(models.User,
+                                                models.Organization.id == models.User.organization_id)
+    user_org = user_org_query.filter(models.User.id == user_id).first()
+    if not user_org:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=f"User with ID: {user_id} not found or not accessible by your organization.")
-    if user.organization is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=f"User with ID: {user_id} is not associated with a specific organization (e.g., a Platform Admin).")
-    return user.organization
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Organization not found for user with ID: {user_id}")
+    return user_org
 
 # Update User with id
 @router.put("/{user_id}", response_model=schemas.UserPublic)

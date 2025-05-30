@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import {  Button, Card, Dialog, Field, Flex, Input, Portal, SimpleGrid, useDisclosure } from "@chakra-ui/react"
+import {  Button, Card, Dialog, Field, Flex, Heading, Input, Portal, SimpleGrid, useDisclosure } from "@chakra-ui/react"
 import { Link } from "@tanstack/react-router"
 import type { paths } from "@/types/openapi"
 import { API_BASE_URL } from "@/config"
@@ -113,6 +113,9 @@ function RouteComponent() {
 
   return (
     <>
+    <Heading size="lg" mb={6}>
+      Items
+    </Heading>
       <Flex justify="flex-end" mb={4}>
         <Button 
             onClick={onOpen}

@@ -1,4 +1,4 @@
-import { Button, Field, Flex, HStack, Input, SimpleGrid } from "@chakra-ui/react"
+import { Button, Field, Flex, Heading, HStack, Input, SimpleGrid, Spacer } from "@chakra-ui/react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type { paths } from "@/types/openapi"
 import { useEffect, useState } from "react"
@@ -8,6 +8,7 @@ import { CloseButton, Dialog, Portal } from "@chakra-ui/react"
 import { useAuth } from "@/contexts/AuthContext"
 
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { LuArrowLeft } from "react-icons/lu"
 
 
 export const Route = createFileRoute('/dashboard/items/$itemId')({
@@ -61,22 +62,23 @@ function RouteComponent() {
     const queryClient = useQueryClient()
     const navigate = useNavigate()
 
-    const { data, isLoading, error } = useQuery<Item>({
+    const { data: itemData, isLoading, error } = useQuery<Item>({
         queryKey: ["items", itemId],
         queryFn: () => getItem(itemId, token),
     })
 
     const { register, handleSubmit, reset } = useForm<UpdatePayload>({
-        defaultValues: data ? data : {},
+        defaultValues: itemData ? itemData : {},
       })
 
     // Reset the form when the data is loaded or updated
     useEffect(() => {
-        if (data) {
-            reset(data)
+        if (itemData) {
+            reset(itemData)
         }
-    }, [data, reset])
+    }, [itemData, reset])
 
+    // Edit
     const { mutate: editMutate } = useMutation({
         mutationFn: updateItem,
         onSuccess: () => {
@@ -90,6 +92,7 @@ function RouteComponent() {
         editMutate({ id: itemId, data: formData, token })
     }
 
+    // Delete
     const { mutate: deleteMutate, isPending } = useMutation({
       mutationFn: deleteItem,
       onSuccess: () => {
@@ -102,86 +105,101 @@ function RouteComponent() {
       if (itemId && token) deleteMutate({ id: itemId, token })
     }
 
-    if (isLoading || !data) return <p>Loading...</p>
+    if (isLoading || !itemData) return <p>Loading...</p>
 
     if (error) return <p>Error: {error.message}</p>
 
   return (
-    <div>
-        <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} gap={4}>
-            <Field.Root>
-                <Field.Label>Name</Field.Label>
-                <Input {...register("name")} disabled={!editMode} />
-            </Field.Root>
-            <Field.Root>
-                <Field.Label>Price</Field.Label>
-                <Input {...register("price")} disabled={!editMode} />
-            </Field.Root>
-        </SimpleGrid>
+    <>
+      <Flex align="center" mb={6} gap={4}>
+        <Heading size="lg">
+          Item: {itemData?.name}
+        </Heading>
 
-        <Flex justifyContent="center" mt={6}>
-            {editMode ? (
-                <HStack justify="flex-end">
-                    <Button onClick={handleSubmit(onSubmit)} colorScheme="blue">
-                        Save
-                    </Button>
-                    <Button
-                        variant="outline"
-                        onClick={() => {
-                            reset()
-                            setEditMode(false)
-                        }}
-                    >
-                        Cancel
-                    </Button>
-                </HStack>
-                ) : (
-                <HStack justify="center" width="100%">
-                    <Button
-                        type="button"    
-                        alignSelf="flex-end" 
-                        onClick={() => setEditMode(true)} 
-                        disabled={!currentUser?.permissions.includes("update:items")}
-                >
-                    Edit
+        <Spacer />
+        
+        <Button
+          variant="ghost"
+          onClick={() => navigate({ to: "/dashboard/items" })}
+        >
+         <LuArrowLeft /> Back to Items
+        </Button>
+      </Flex>
+      
+      <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} gap={4}>
+          <Field.Root>
+              <Field.Label>Name</Field.Label>
+              <Input {...register("name")} disabled={!editMode} />
+          </Field.Root>
+          <Field.Root>
+              <Field.Label>Price</Field.Label>
+              <Input {...register("price")} disabled={!editMode} />
+          </Field.Root>
+      </SimpleGrid>
+
+      <Flex justifyContent="center" mt={6}>
+        {editMode ? (
+            <HStack justify="flex-end">
+                <Button onClick={handleSubmit(onSubmit)} colorScheme="blue">
+                    Save
                 </Button>
-                <Dialog.Root role="alertdialog">
-                    <Dialog.Trigger asChild>
-                      <Button 
-                        variant="solid"
-                        colorPalette={"red"}
-                       >
-                        Delete
-                      </Button>
-                    </Dialog.Trigger>
-                    <Portal>
-                      <Dialog.Backdrop />
-                      <Dialog.Positioner>
-                        <Dialog.Content>
-                          <Dialog.Header>
-                            <Dialog.Title>Are you sure?</Dialog.Title>
-                          </Dialog.Header>
-                          <Dialog.Body>
-                            <p>
-                              This will permanently delete {data?.name}
-                            </p>
-                          </Dialog.Body>
-                          <Dialog.Footer>
-                            <Dialog.ActionTrigger asChild>
-                              <Button variant="outline">Cancel</Button>
-                            </Dialog.ActionTrigger>
-                            <Button colorPalette="red" onClick={confirmDelete} loading={isPending}>Delete</Button>
-                          </Dialog.Footer>
-                          <Dialog.CloseTrigger asChild>
-                            <CloseButton size="sm" />
-                          </Dialog.CloseTrigger>
-                        </Dialog.Content>
-                      </Dialog.Positioner>
-                    </Portal>
-                  </Dialog.Root> 
-                </HStack>
-            )}
-        </Flex>
-    </div>
+                <Button
+                    variant="outline"
+                    onClick={() => {
+                        reset()
+                        setEditMode(false)
+                    }}
+                >
+                    Cancel
+                </Button>
+            </HStack>
+            ) : (
+            <HStack justify="center" width="100%">
+                <Button
+                    alignSelf="flex-end" 
+                    onClick={() => setEditMode(true)} 
+                    disabled={!currentUser?.permissions.includes("update:items")}
+            >
+                Edit
+            </Button>
+            <Dialog.Root role="alertdialog">
+                <Dialog.Trigger asChild>
+                  <Button 
+                    variant="solid"
+                    colorPalette={"red"}
+                    disabled={!currentUser?.permissions.includes("delete:items")}
+                    >
+                    Delete
+                  </Button>
+                </Dialog.Trigger>
+                <Portal>
+                  <Dialog.Backdrop />
+                  <Dialog.Positioner>
+                    <Dialog.Content>
+                      <Dialog.Header>
+                        <Dialog.Title>Are you sure?</Dialog.Title>
+                      </Dialog.Header>
+                      <Dialog.Body>
+                        <p>
+                          This will permanently delete {itemData?.name}
+                        </p>
+                      </Dialog.Body>
+                      <Dialog.Footer>
+                        <Dialog.ActionTrigger asChild>
+                          <Button variant="outline">Cancel</Button>
+                        </Dialog.ActionTrigger>
+                        <Button colorPalette="red" onClick={confirmDelete} loading={isPending}>Delete</Button>
+                      </Dialog.Footer>
+                      <Dialog.CloseTrigger asChild>
+                        <CloseButton size="sm" />
+                      </Dialog.CloseTrigger>
+                    </Dialog.Content>
+                  </Dialog.Positioner>
+                </Portal>
+              </Dialog.Root> 
+            </HStack>
+        )}
+      </Flex>
+    </>
   )
 }

@@ -42,8 +42,6 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
         models.User.organization_id == organization.id
     ).first()
 
-    print(user.organization_id)
-
     if not user or not utils.verify_password(form_data.password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -76,3 +74,14 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 @router.get("/users/me/", response_model=schemas.CurrentUser)
 async def read_users_me(current_user: Annotated[schemas.UserPublic, Depends(security.get_current_active_user)],):
     return current_user
+
+
+@router.get("/users/me/organization", response_model=schemas.OrganizationPublic)
+async def read_users_me_organization(db: Session = Depends(get_db), current_user: schemas.UserPublic = Depends(security.get_current_active_user)):
+    user_org_query = db.query(models.Organization).join(models.User,
+                                                models.Organization.id == models.User.organization_id)
+    user_org = user_org_query.filter(models.Organization.id == current_user.organization_id).first()
+    if not user_org:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Organization not found for Current user")
+    return user_org

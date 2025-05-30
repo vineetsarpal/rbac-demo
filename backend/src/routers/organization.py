@@ -37,20 +37,20 @@ async def get_organizations(skip: int = 0, limit: int = 10, db: Session = Depend
 
 # Get Organization with id
 @router.get("/{organization_id}", response_model=schemas.OrganizationPublic)
-async def get_organization(organization_id: int, db: Session = Depends(get_db), current_user: schemas.CurrentUser = Depends(security.get_current_active_user)):
+async def get_organization(organization_id: str, db: Session = Depends(get_db), current_user: schemas.CurrentUser = Depends(security.get_current_active_user)):
     # Check permissions
     user_permissions = current_user.permissions
     if "read:organizations" not in user_permissions:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions to perform this action!")
     
-    organization  = db.query(models.Organization).first()
+    organization  = db.query(models.Organization).filter(models.Organization.id == organization_id).first()
     if not organization:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Organization with id:  {organization_id} not found")
     return organization
 
 # Update Organization with id
 @router.put("/{organization_id}", response_model=schemas.OrganizationPublic)
-def update_organization(organization_id: int, updated_organization: schemas.OrganizationCreate, db: Session = Depends(get_db), current_user: schemas.CurrentUser = Depends(security.get_current_active_user)):
+def update_organization(organization_id: str, updated_organization: schemas.OrganizationCreate, db: Session = Depends(get_db), current_user: schemas.CurrentUser = Depends(security.get_current_active_user)):
     # Check permissions
     user_permissions = current_user.permissions
     if "update:organizations" not in user_permissions:
@@ -67,7 +67,7 @@ def update_organization(organization_id: int, updated_organization: schemas.Orga
 
 # Delete Organization with id
 @router.delete("/{organization_id}")
-def delete_organization(organization_id: int, db: Session = Depends(get_db), current_user: schemas.CurrentUser = Depends(security.get_current_active_user)):
+def delete_organization(organization_id: str, db: Session = Depends(get_db), current_user: schemas.CurrentUser = Depends(security.get_current_active_user)):
     # Check permissions
     user_permissions = current_user.permissions
     if "delete:organizations" not in user_permissions:

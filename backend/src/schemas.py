@@ -13,7 +13,7 @@ class TokenData(BaseModel):
     permissions: List[str] = []
 
     
-# Organization Schemas ===
+# === Organization Schemas ===
 class OrganizationBase(BaseModel):
     id: str
     name: str

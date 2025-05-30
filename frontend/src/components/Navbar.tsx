@@ -12,7 +12,7 @@ function Navbar() {
 
     const { data: orgData } = useQuery({
         queryKey: ["currentUserOrg", currentUser?.id, token],
-        queryFn: () => userService.getCurrentUserOrg(currentUser!.id.toString(), token),
+        queryFn: () => userService.getCurrentUserOrg(token),
         staleTime: 5 * 60 * 1000,
         enabled: isLoggedIn && !!token && !!currentUser
     })
