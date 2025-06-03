@@ -39,6 +39,7 @@ function RouteComponent() {
           mb={2}
         >
           <Box maxW="container.xl" mx="auto">
+            {/* <PageHeading /> */}
             <Outlet />
           </Box>
         </GridItem>

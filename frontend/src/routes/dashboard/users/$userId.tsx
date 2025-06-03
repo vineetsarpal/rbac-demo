@@ -397,7 +397,7 @@ function RouteComponent() {
           <Tabs.Content value="roles">
             <VStack gap={5} align="stretch" mt={4}>
               <Text fontSize="lg" fontWeight="semibold" mb={3}>
-                Manage Permissions
+                Manage Roles
               </Text>
               {roles && roles.length > 0 ? (
                 <VStack align="flex-start" gap={3}>
@@ -420,7 +420,7 @@ function RouteComponent() {
                 </VStack>
               ) : (
                 <Text fontStyle="italic">
-                  No permissions available to assign.
+                  No roles available to assign.
                 </Text>
               )}
               <Spacer />
