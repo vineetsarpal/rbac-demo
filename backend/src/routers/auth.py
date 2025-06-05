@@ -27,8 +27,6 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     
     org_slug, username = org_username[0].lower(), org_username[1].lower()
 
-    print(f"org slug {org_slug}")
-
     organization = db.query(models.Organization).filter(models.Organization.slug == org_slug).first()
     if not organization:
         raise HTTPException(

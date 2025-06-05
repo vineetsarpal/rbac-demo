@@ -70,6 +70,20 @@ Once running, visit [http://localhost:8000/docs](http://localhost:8000/docs) for
 
 ## Using the Application
 
+### App Screenshots
+
+**Login Page**
+![Login Page](screenshots/login.png)
+
+**Superadmin Dashboard**
+![Superadmin View](screenshots/superadmin-dashboard.png)
+
+**Admin Dashboard**
+![Admin View](screenshots/admin-dashboard.png)
+
+**Viewer Dashboard**
+![Viewer View](screenshots/viewer.png)
+
 ### Authentication
 After starting both frontend and backend, visit `http://localhost:5173` to access the login page. The seed script creates several test users with different roles:
 
