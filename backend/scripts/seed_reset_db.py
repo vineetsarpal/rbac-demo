@@ -281,8 +281,8 @@ def seed_data():
         db.commit()
 
         # --- Create items ---
-        item1 = models.Item(name="Item 1", description="Foo", price=50, organization_id=org1_id)
-        item2 = models.Item(name="Item 2", description="Foo Foo", price=100, organization_id=org2_id)
+        item1 = models.Item(name="Item X", description="Ex Eggs", price=75, organization_id=org1_id)
+        item2 = models.Item(name="Item Y", description="Why Wai", price=100, organization_id=org2_id)
         db.add_all([item1, item2])
         db.commit()
         db.refresh(item1)

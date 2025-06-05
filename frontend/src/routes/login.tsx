@@ -1,11 +1,12 @@
 import { useForm } from "react-hook-form"
-import { Input, VStack,Field, Button, Text } from "@chakra-ui/react"
+import { Input, VStack,Field, Button, Text, Box, Alert, AlertTitle, AlertDescription, AlertRoot, Code, HStack } from "@chakra-ui/react"
 import { useMutation } from "@tanstack/react-query"
 import { useAuth } from "@/contexts/AuthContext"
 import { authService } from "@/services/authService"
 
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useEffect } from "react"
+import { FiAlertCircle } from "react-icons/fi"
 
 
 export const Route = createFileRoute('/login')({
@@ -16,6 +17,16 @@ type FormData = {
     username: string
     password: string
 }
+
+const sampleCredentials = [
+    { role: "Superadmin", username: "\\superadmin", password: "superadmin" },
+    { role: "Acme Admin", username: "acme\\admin", password: "admin" },
+    { role: "Acme Editor", username: "acme\\editor", password: "editor" },
+    { role: "Acme Viewer", username: "acme\\viewer", password: "viewer" },
+    { role: "FooBar Admin", username: "foobar\\admin", password: "admin" },
+    { role: "FooBar Editor", username: "foobar\\editor", password: "editor" },
+    { role: "FooBar Viewer", username: "foobar\\viewer", password: "viewer" },
+  ]
 
 function RouteComponent() {
     const { register, handleSubmit } = useForm<FormData>()
@@ -57,6 +68,35 @@ function RouteComponent() {
                 <Text color={"red"}>{error && error.message}</Text>
             </VStack>
         </form>
+
+        {/* Sample credentials info */}
+      <Box maxW={500} mx="auto" mt={10} mb={10}>
+        <AlertRoot
+          status="info"
+          borderRadius="md"
+          flexDirection="column"
+          alignItems="start"
+          p={4}
+        >
+           <HStack mb={2} gap={2}>
+            <FiAlertCircle />
+            <AlertTitle>Sample Credentials</AlertTitle>
+          </HStack>
+        <AlertDescription w="full">
+            <VStack align="stretch" gap={2}>
+                {sampleCredentials.map(({ role, username, password}) => (
+                    <Text key={username}>
+                        <Text as="span" fontWeight="bold">{role}:</Text>{" "}
+                        <Text>username: {username} pwd: {password}</Text>
+                    </Text>
+                ))}
+                <Text mt={2} color="red.500" fontWeight="medium">
+                Note: Remove these credentials/info box before deploying to production.
+                </Text>
+            </VStack>
+        </AlertDescription>
+        </AlertRoot>
+      </Box>
     </>
   )
 }
