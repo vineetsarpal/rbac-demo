@@ -159,8 +159,5 @@ For a production-ready system:
   - Password policies
   - MFA (Multi-Factor Authentication)
 - Set up proper logging and monitoring
-- Configure proper backup strategies for PostgreSQL
 - Use a production-grade PostgreSQL setup
 - Set up proper CI/CD pipelines
-- Add error tracking and monitoring
-- Consider horizontal scaling needs

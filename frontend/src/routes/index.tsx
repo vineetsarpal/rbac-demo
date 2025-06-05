@@ -20,7 +20,7 @@ function Index() {
       <Container maxW="7xl" py={20} textAlign="center">
         <VStack gap={6}>
           <Heading fontSize={{ base: "3xl", md: "5xl" }}>
-            RBAC Demo
+            RBAC Starter Kit
           </Heading>
           <Stack direction={{ base: "column", sm: "row" }} gap={4} mt={4} justify="center">
               <AuthButton />

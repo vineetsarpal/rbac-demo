@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "@/config"
+import type { paths } from "@/types/openapi"
 
 type FormData = {
   username: string
@@ -9,6 +10,9 @@ type LoginResponse = {
   access_token: string
   token_type: string
 }
+
+type User = paths["/auth/users/me/"]["get"]["responses"]["200"]["content"]["application/json"]
+
 
 export const authService = {
   // Login API call
@@ -28,4 +32,8 @@ export const authService = {
     if (!res.ok) throw new Error("Invalid credentials")
     return res.json();
   },
+
+  hasPermission(user: User, requiredPermission: string): boolean {
+    return user?.permissions.includes(requiredPermission)
+  }
 }
