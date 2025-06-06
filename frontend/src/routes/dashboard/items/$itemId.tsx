@@ -132,6 +132,10 @@ function RouteComponent() {
               <Input {...register("name")} disabled={!editMode} />
           </Field.Root>
           <Field.Root>
+              <Field.Label>Description</Field.Label>
+              <Input {...register("description")} disabled={!editMode} />
+          </Field.Root>          
+          <Field.Root>
               <Field.Label>Price</Field.Label>
               <Input {...register("price")} disabled={!editMode} />
           </Field.Root>

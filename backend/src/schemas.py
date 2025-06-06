@@ -95,6 +95,7 @@ class RoleWithAssignment(RoleBase):
 # === Item Schemas ===
 class ItemBase(BaseModel):
     name: str
+    description: str | None = None
     price: float
 
 class ItemCreate(ItemBase):
@@ -104,6 +105,8 @@ class ItemPublic(ItemBase):
     id: int
     organization_id: str | None = None
     is_active: bool | None = True
+    created_at: datetime
+    updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
 

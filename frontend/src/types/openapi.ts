@@ -379,6 +379,8 @@ export interface components {
         ItemCreate: {
             /** Name */
             name: string;
+            /** Description */
+            description?: string | null;
             /** Price */
             price: number;
         };
@@ -386,6 +388,8 @@ export interface components {
         ItemPublic: {
             /** Name */
             name: string;
+            /** Description */
+            description?: string | null;
             /** Price */
             price: number;
             /** Id */
@@ -397,6 +401,16 @@ export interface components {
              * @default true
              */
             is_active: boolean | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
         };
         /** OrganizationCreate */
         OrganizationCreate: {
