@@ -1,6 +1,6 @@
 from fastapi import status, HTTPException, Depends, APIRouter, Response
 from typing import Annotated
-from src import models, schemas, security
+from src import models, schemas, security, utils
 from sqlalchemy.orm import Session
 from src.database import get_db
 from typing import List
@@ -14,9 +14,7 @@ router = APIRouter(
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.OrganizationPublic)
 async def create_organization(organization: schemas.OrganizationCreate, db: Session = Depends(get_db), current_user: schemas.CurrentUser = Depends(security.get_current_active_user)):
     # Check permissions
-    user_permissions = current_user.permissions
-    if "create:organizations" not in user_permissions:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions to perform this action!")
+    utils.has_permission(current_user, "create:organizations")
     
     new_org = models.Organization(**organization.model_dump())
     db.add(new_org)
@@ -28,9 +26,7 @@ async def create_organization(organization: schemas.OrganizationCreate, db: Sess
 @router.get("/")
 async def get_organizations(skip: int = 0, limit: int = 10, db: Session = Depends(get_db), current_user: schemas.CurrentUser = Depends(security.get_current_active_user)):
     # Check permissions
-    user_permissions = current_user.permissions
-    if "read:organizations" not in user_permissions:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions to perform this action!")
+    utils.has_permission(current_user, "read:organizations")
     
     organizations = db.query(models.Organization).offset(skip).limit(limit).all()
     return organizations
@@ -39,9 +35,7 @@ async def get_organizations(skip: int = 0, limit: int = 10, db: Session = Depend
 @router.get("/{organization_id}", response_model=schemas.OrganizationPublic)
 async def get_organization(organization_id: str, db: Session = Depends(get_db), current_user: schemas.CurrentUser = Depends(security.get_current_active_user)):
     # Check permissions
-    user_permissions = current_user.permissions
-    if "read:organizations" not in user_permissions:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions to perform this action!")
+    utils.has_permission(current_user, "read:organizations")
     
     organization  = db.query(models.Organization).filter(models.Organization.id == organization_id).first()
     if not organization:
@@ -52,9 +46,7 @@ async def get_organization(organization_id: str, db: Session = Depends(get_db), 
 @router.put("/{organization_id}", response_model=schemas.OrganizationPublic)
 def update_organization(organization_id: str, updated_organization: schemas.OrganizationCreate, db: Session = Depends(get_db), current_user: schemas.CurrentUser = Depends(security.get_current_active_user)):
     # Check permissions
-    user_permissions = current_user.permissions
-    if "update:organizations" not in user_permissions:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions to perform this action!")
+    utils.has_permission(current_user, "update:organizations")
     
     organization_query = db.query(models.Organization).filter(models.Organization.id == organization_id)
     organization = organization_query.first()
@@ -69,9 +61,7 @@ def update_organization(organization_id: str, updated_organization: schemas.Orga
 @router.delete("/{organization_id}")
 def delete_organization(organization_id: str, db: Session = Depends(get_db), current_user: schemas.CurrentUser = Depends(security.get_current_active_user)):
     # Check permissions
-    user_permissions = current_user.permissions
-    if "delete:organizations" not in user_permissions:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions to perform this action!")
+    utils.has_permission(current_user, "delete:organizations")
     
     organization_query = db.query(models.Organization).filter(models.Organization.id == organization_id)
     organization = organization_query.first()

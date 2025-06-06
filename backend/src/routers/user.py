@@ -13,9 +13,7 @@ router = APIRouter(
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.UserPublic)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db), current_user: schemas.CurrentUser = Depends(security.get_current_active_user)):
     # Check permissions
-    user_permissions = current_user.permissions
-    if "create:users" not in user_permissions:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions to perform this action!")
+    utils.has_permission(current_user, "create:users")
     
     # hash the password
     hashed_password = utils.hash_password(user.password)
@@ -31,9 +29,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db), current
 @router.get("/")
 async def get_users(skip: int = 0, limit: int = 10, db: Session = Depends(get_db), current_user: schemas.CurrentUser = Depends(security.get_current_active_user)):
     # Check permissions
-    user_permissions = current_user.permissions
-    if "read:users" not in user_permissions:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions to perform this action!")
+    utils.has_permission(current_user, "read:users")
     
     users_query = db.query(models.User)
     if not current_user.is_platform_admin:
@@ -45,9 +41,7 @@ async def get_users(skip: int = 0, limit: int = 10, db: Session = Depends(get_db
 @router.get("/{user_id}", response_model=schemas.UserPublic)
 def get_user(user_id: int, db: Session = Depends(get_db), current_user: schemas.CurrentUser = Depends(security.get_current_active_user)):
     # Check permissions
-    user_permissions = current_user.permissions
-    if "read:users" not in user_permissions:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions to perform this action!")
+    utils.has_permission(current_user, "read:users")
     
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
@@ -69,9 +63,7 @@ async def get_user_organization(user_id: int, db: Session = Depends(get_db)):
 @router.put("/{user_id}", response_model=schemas.UserPublic)
 def update_user(user_id: int, updated_user: schemas.UserUpdate, db: Session = Depends(get_db), current_user = Depends(security.get_current_user)):
     # Check permissions
-    user_permissions = current_user.permissions
-    if "update:users" not in user_permissions:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions to perform this action!")
+    utils.has_permission(current_user, "update:users")
     
     user_query = db.query(models.User).filter(models.User.id == user_id)
     user = user_query.first()
@@ -85,9 +77,7 @@ def update_user(user_id: int, updated_user: schemas.UserUpdate, db: Session = De
 @router.delete("/{user_id}")
 def delete_role(user_id: int, db: Session = Depends(get_db), current_user: schemas.CurrentUser = Depends(security.get_current_active_user)):
     # Check permissions
-    user_permissions = current_user.permissions
-    if "delete:users" not in user_permissions:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions to perform this action!")
+    utils.has_permission(current_user, "delete:users")
     
     # Prevent self deletion
     if user_id == current_user.id:
@@ -134,9 +124,7 @@ def get_user_roles(user_id: int, db: Session = Depends(get_db)):
 @router.post("/{user_id}/roles")
 def update_user_roles(user_id: int, role_ids: List[int], db: Session = Depends(get_db), current_user = Depends(security.get_current_user)):
     # Check permissions
-    user_permissions = current_user.permissions
-    if "update:users" not in user_permissions:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions to perform this action!")
+    utils.has_permission(current_user, "update:users")
     
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
