@@ -1,6 +1,6 @@
 # RBAC Starter Kit
 
-A modern, full-stack starter kit for **Role-Based Access Control (RBAC)** using **FastAPI** (Python), **React** (TypeScript), and **PostgreSQL**.
+A modern, full-stack starter kit for **Role-Based Access Control (RBAC)** using **FastAPI** (Python), **React** (TypeScript), and **PostgreSQL**
 
 ## Features
 
@@ -18,7 +18,7 @@ A modern, full-stack starter kit for **Role-Based Access Control (RBAC)** using 
 
 1.  **Clone the repo:**
     ```bash
-    git clone [https://github.com/vineetsarpal/rbac-starterkit](https://github.com/vineetsarpal/rbac-starterkit)
+    git clone https://github.com/vineetsarpal/rbac-starterkit
     ```
 
 ### Backend
@@ -31,9 +31,9 @@ A modern, full-stack starter kit for **Role-Based Access Control (RBAC)** using 
     pip install -r requirements.txt
     ```
 2.  **Set up Postgres:**
-    * Create a Postgres instance and get its connection URL.
+    * Create a Postgres instance and get its connection URL
 3.  **Configure environment:**
-    * Create a `.env` file (see `.env.example`). Set your secrets and DB connection URL.
+    * Create a `.env` file (see `.env.example`). Set your secrets and DB connection URL
 4.  **Seed data:**
     ```bash
     python3 scripts/seed_reset_db.py
@@ -76,24 +76,24 @@ A modern, full-stack starter kit for **Role-Based Access Control (RBAC)** using 
 
 ## Role & Permission Highlights
 
-* **Organization Isolation:** Users only access data within their organization. Superadmin sees all.
+* **Organization Isolation:** Users only access data within their organization. Superadmin sees all
 * **Default Capabilities:**
     * **Admin:** Full org access, manage users/roles/permissions.
-    * **Editor:** Create/edit/delete items.
-    * **Viewer:** View items.
+    * **Editor:** Create/edit/delete items
+    * **Viewer:** View items
 * **Configurable Permissions:** Easily customize permissions like `create:users`, `read:items`, etc.
 
 
 ## Scope & Use Cases
 
-This kit is perfect for **prototyping, MVPs, and small to medium-sized applications** that need integrated RBAC. It's a hands-on example of building robust access control.
+This kit is perfect for **prototyping, MVPs, and small to medium-sized applications** that need integrated RBAC. It's a hands-on example of building robust access control
 
 For **enterprise-grade applications** needing vast scale, strict compliance, or advanced features (like comprehensive MFA/SSO across many services), consider specialized external Identity and Access Management (IAM) solutions
 
 
 ## Best Practices
 
-* **Centralize permissions:** Avoid scattered checks.
-* **Meaningful roles:** Prevent "role explosion."
-* **Seed scripts are key:** Great for demos and onboarding.
-* **Backend rules:** Never trust frontend permissions alone.
+* **Centralize permissions:** Avoid scattered checks
+* **Meaningful roles:** Prevent "role explosion"
+* **Seed scripts are key:** Great for demos and onboarding
+* **Backend rules:** Never trust frontend permissions alone
